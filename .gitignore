@@ -1,0 +1,11 @@
+.DS_Store
+Thumbs.db
+*.log
+_docx_extract/
+_*.zip
+video_frames/
+video_preview.jpg
+video_thumb.jpg
+node_modules/
+.vercel/
+.surge/
