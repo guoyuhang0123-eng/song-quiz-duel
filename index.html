@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>北宋知识双人竞速赛</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=ZCOOL+XiaoWei&family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --ink: #1a2332;
+      --muted: #5a6a7a;
+      --paper: #f3f6f9;
+      --panel: #ffffff;
+      --line: #d5dde6;
+      --red: #d63b3b;
+      --red-soft: #fff1f0;
+      --red-deep: #a82222;
+      --blue: #2f6fdb;
+      --blue-soft: #eef4ff;
+      --blue-deep: #1f4ea8;
+      --ok: #1f9d63;
+      --bad: #d63b3b;
+      --shadow: 0 10px 28px rgba(26, 35, 50, 0.08);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      height: 100%;
+      font-family: "Noto Sans SC", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(1200px 600px at 15% -10%, rgba(214, 59, 59, 0.12), transparent 55%),
+        radial-gradient(1000px 500px at 90% 0%, rgba(47, 111, 219, 0.14), transparent 50%),
+        linear-gradient(180deg, #e8eef5 0%, #f7f9fc 45%, #eef2f7 100%);
+      overflow: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(26, 35, 50, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(26, 35, 50, 0.03) 1px, transparent 1px);
+      background-size: 36px 36px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .screen {
+      position: relative;
+      z-index: 1;
+      height: 100%;
+      display: none;
+      flex-direction: column;
+    }
+    .screen.active { display: flex; }
+
+    /* —— 开始页 —— */
+    #start-screen {
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      text-align: center;
+    }
+
+    .hero {
+      width: min(920px, 100%);
+      background: rgba(255, 255, 255, 0.78);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(213, 221, 230, 0.9);
+      border-radius: 28px;
+      box-shadow: var(--shadow);
+      padding: 48px 40px 40px;
+      animation: rise 0.7s ease both;
+    }
+
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(18px); }
+      to { opacity: 1; transform: none; }
+    }
+
+    .brand {
+      font-family: "ZCOOL XiaoWei", serif;
+      font-size: clamp(2.4rem, 5vw, 3.6rem);
+      letter-spacing: 0.08em;
+      line-height: 1.15;
+      margin-bottom: 12px;
+    }
+
+    .brand span.red { color: var(--red); }
+    .brand span.blue { color: var(--blue); }
+
+    .tagline {
+      color: var(--muted);
+      font-size: 1.05rem;
+      margin-bottom: 28px;
+    }
+
+    .mode-row {
+      display: flex;
+      gap: 14px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 28px;
+    }
+
+    .mode-btn {
+      border: 2px solid var(--line);
+      background: #fff;
+      border-radius: 16px;
+      padding: 14px 18px;
+      min-width: 140px;
+      cursor: pointer;
+      transition: 0.2s ease;
+      font: inherit;
+      color: var(--ink);
+    }
+    .mode-btn strong { display: block; font-size: 1.05rem; margin-bottom: 4px; }
+    .mode-btn small { color: var(--muted); }
+    .mode-btn:hover { transform: translateY(-2px); border-color: #9eb0c4; }
+    .mode-btn.selected {
+      border-color: var(--ink);
+      box-shadow: 0 0 0 3px rgba(26, 35, 50, 0.08);
+      background: #f8fafc;
+    }
+
+    .keys-guide {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin: 0 auto 28px;
+      max-width: 640px;
+      text-align: left;
+    }
+
+    .key-card {
+      border-radius: 18px;
+      padding: 16px 18px;
+      border: 1px solid var(--line);
+      background: #fff;
+    }
+    .key-card.red { background: var(--red-soft); border-color: #f0c2c0; }
+    .key-card.blue { background: var(--blue-soft); border-color: #c5d7f8; }
+    .key-card h3 { font-size: 1rem; margin-bottom: 8px; }
+    .key-card.red h3 { color: var(--red); }
+    .key-card.blue h3 { color: var(--blue); }
+    .kbd-row { display: flex; gap: 8px; flex-wrap: wrap; }
+    .kbd {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 34px;
+      height: 34px;
+      padding: 0 8px;
+      border-radius: 8px;
+      background: #fff;
+      border: 1px solid #c9d3de;
+      box-shadow: 0 2px 0 #c9d3de;
+      font-weight: 700;
+      font-size: 0.85rem;
+    }
+
+    .start-btn {
+      appearance: none;
+      border: none;
+      cursor: pointer;
+      font: inherit;
+      font-weight: 700;
+      font-size: 1.15rem;
+      letter-spacing: 0.06em;
+      color: #fff;
+      background: linear-gradient(135deg, var(--red) 0%, #c94a2f 48%, var(--blue) 100%);
+      background-size: 180% 180%;
+      padding: 16px 42px;
+      border-radius: 999px;
+      box-shadow: 0 12px 28px rgba(47, 111, 219, 0.25);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      animation: shift 4s ease-in-out infinite;
+    }
+    .start-btn:hover { transform: translateY(-2px) scale(1.02); }
+    @keyframes shift {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+
+    .hint {
+      margin-top: 16px;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    /* —— 倒计时 —— */
+    #countdown-screen {
+      align-items: center;
+      justify-content: center;
+    }
+    #countdown-num {
+      font-family: "ZCOOL XiaoWei", serif;
+      font-size: 8rem;
+      color: var(--ink);
+      animation: pop 0.45s ease;
+    }
+    @keyframes pop {
+      from { transform: scale(0.4); opacity: 0.2; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    /* —— 对战页 —— */
+    #game-screen { padding: 14px 16px 18px; gap: 12px; }
+
+    .topbar {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      gap: 12px;
+      padding: 8px 6px;
+    }
+
+    .score-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      font-size: 1.05rem;
+      justify-self: center;
+      background: rgba(255,255,255,0.85);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 8px 18px;
+      box-shadow: var(--shadow);
+    }
+    .score-pill .r { color: var(--red); }
+    .score-pill .b { color: var(--blue); }
+    .score-pill .sep { color: #9aa8b8; }
+
+    .subtitle {
+      grid-column: 1 / -1;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.92rem;
+      margin-top: -4px;
+    }
+
+    .arena {
+      flex: 1;
+      min-height: 0;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .side {
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      background: rgba(255,255,255,0.88);
+      border: 2px solid var(--line);
+      border-radius: 22px;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      transition: border-color 0.25s ease, box-shadow 0.25s ease;
+    }
+    .side.red { border-color: rgba(214, 59, 59, 0.35); }
+    .side.blue { border-color: rgba(47, 111, 219, 0.35); }
+    .side.flash-ok { box-shadow: 0 0 0 3px rgba(31, 157, 99, 0.45), var(--shadow); }
+    .side.flash-bad { box-shadow: 0 0 0 3px rgba(214, 59, 59, 0.45), var(--shadow); animation: shake 0.35s ease; }
+    .side.done { opacity: 0.92; }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-6px); }
+      75% { transform: translateX(6px); }
+    }
+
+    .side-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--line);
+    }
+    .side.red .side-head { background: linear-gradient(90deg, var(--red-soft), #fff); }
+    .side.blue .side-head { background: linear-gradient(90deg, var(--blue-soft), #fff); }
+
+    .team-name {
+      font-family: "ZCOOL XiaoWei", serif;
+      font-size: 1.45rem;
+      letter-spacing: 0.08em;
+    }
+    .side.red .team-name { color: var(--red); }
+    .side.blue .team-name { color: var(--blue); }
+
+    .stat-box {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .time-badge, .score-badge {
+      min-width: 52px;
+      height: 36px;
+      padding: 0 12px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      color: #fff;
+      font-variant-numeric: tabular-nums;
+    }
+    .side.red .time-badge, .side.red .score-badge { background: var(--red); }
+    .side.blue .time-badge, .side.blue .score-badge { background: var(--blue); }
+
+    .progress-label {
+      color: var(--muted);
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+
+    .side-body {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      padding: 16px 18px 18px;
+      gap: 14px;
+    }
+
+    .prompt {
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    .question-box {
+      flex: 1;
+      min-height: 120px;
+      background: #f5f7fa;
+      border: 1px solid #e3e9f0;
+      border-radius: 16px;
+      padding: 18px 18px;
+      font-size: clamp(1rem, 1.35vw, 1.18rem);
+      line-height: 1.75;
+      overflow: auto;
+    }
+
+    .options {
+      display: grid;
+      gap: 10px;
+    }
+
+    .opt {
+      appearance: none;
+      width: 100%;
+      text-align: left;
+      border: 1.5px solid #d7e0ea;
+      background: #fff;
+      border-radius: 14px;
+      padding: 12px 14px;
+      font: inherit;
+      font-size: 0.98rem;
+      cursor: pointer;
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 12px;
+      align-items: center;
+      transition: 0.15s ease;
+    }
+    .opt:hover:not(:disabled) {
+      border-color: #9eb0c4;
+      transform: translateY(-1px);
+    }
+    .opt:disabled { cursor: default; opacity: 0.85; }
+    .opt .key {
+      width: 30px;
+      height: 30px;
+      border-radius: 8px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 0.82rem;
+      color: #fff;
+      flex-shrink: 0;
+    }
+    .side.red .opt .key { background: var(--red); }
+    .side.blue .opt .key { background: var(--blue); }
+    .opt.correct {
+      border-color: var(--ok);
+      background: #e9f8f0;
+    }
+    .opt.wrong {
+      border-color: var(--bad);
+      background: #fdeeee;
+    }
+
+    .finished-overlay {
+      display: none;
+      flex: 1;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 8px;
+      background: #f5f7fa;
+      border-radius: 16px;
+      border: 1px dashed #c9d3de;
+      min-height: 160px;
+    }
+    .side.done .question-box,
+    .side.done .options,
+    .side.done .prompt { display: none; }
+    .side.done .finished-overlay { display: flex; }
+    .finished-overlay strong {
+      font-family: "ZCOOL XiaoWei", serif;
+      font-size: 1.6rem;
+    }
+
+    /* —— 结果页 —— */
+    #result-screen {
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .result-card {
+      width: min(760px, 100%);
+      background: rgba(255,255,255,0.9);
+      border: 1px solid var(--line);
+      border-radius: 28px;
+      box-shadow: var(--shadow);
+      padding: 42px 36px;
+      text-align: center;
+      animation: rise 0.55s ease both;
+    }
+
+    .result-card h1 {
+      font-family: "ZCOOL XiaoWei", serif;
+      font-size: clamp(2rem, 4vw, 2.8rem);
+      margin-bottom: 8px;
+    }
+
+    .winner-line {
+      font-size: 1.2rem;
+      margin-bottom: 28px;
+      color: var(--muted);
+    }
+    .winner-line b.red { color: var(--red); }
+    .winner-line b.blue { color: var(--blue); }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-bottom: 28px;
+    }
+
+    .stat-panel {
+      border-radius: 18px;
+      padding: 18px;
+      border: 1px solid var(--line);
+      text-align: left;
+    }
+    .stat-panel.red { background: var(--red-soft); border-color: #f0c2c0; }
+    .stat-panel.blue { background: var(--blue-soft); border-color: #c5d7f8; }
+    .stat-panel h3 {
+      font-family: "ZCOOL XiaoWei", serif;
+      font-size: 1.35rem;
+      margin-bottom: 10px;
+    }
+    .stat-panel.red h3 { color: var(--red); }
+    .stat-panel.blue h3 { color: var(--blue); }
+    .stat-panel p {
+      display: flex;
+      justify-content: space-between;
+      padding: 6px 0;
+      border-bottom: 1px dashed rgba(0,0,0,0.08);
+      font-size: 0.98rem;
+    }
+    .stat-panel p:last-child { border-bottom: none; }
+
+    .again-btn {
+      appearance: none;
+      border: none;
+      cursor: pointer;
+      font: inherit;
+      font-weight: 700;
+      font-size: 1.05rem;
+      color: #fff;
+      background: var(--ink);
+      padding: 14px 34px;
+      border-radius: 999px;
+    }
+    .again-btn:hover { opacity: 0.92; }
+
+    @media (max-width: 900px) {
+      html, body { overflow: auto; }
+      #game-screen { height: auto; min-height: 100%; }
+      .arena { grid-template-columns: 1fr; }
+      .keys-guide { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div id="start-screen" class="screen active">
+    <div class="hero">
+      <div class="brand"><span class="red">红方</span> × <span class="blue">蓝方</span><br />北宋知识双人竞速</div>
+      <p class="tagline">左右双屏同时作答，各自独立推进，比谁又快又准</p>
+
+      <div class="mode-row" id="mode-row">
+        <button class="mode-btn selected" data-count="5" type="button">
+          <strong>快速赛 · 5 题</strong>
+          <small>课堂热身推荐</small>
+        </button>
+        <button class="mode-btn" data-count="10" type="button">
+          <strong>完整赛 · 10 题</strong>
+          <small>全部题目通关</small>
+        </button>
+      </div>
+
+      <div class="keys-guide">
+        <div class="key-card red">
+          <h3>红方键位（左侧）</h3>
+          <div class="kbd-row">
+            <span class="kbd">Q</span><span class="kbd">W</span><span class="kbd">E</span><span class="kbd">A</span>
+            <span style="align-self:center;color:var(--muted);font-size:0.9rem">对应选项 1–4</span>
+          </div>
+        </div>
+        <div class="key-card blue">
+          <h3>蓝方键位（右侧）</h3>
+          <div class="kbd-row">
+            <span class="kbd">I</span><span class="kbd">O</span><span class="kbd">P</span><span class="kbd">K</span>
+            <span style="align-self:center;color:var(--muted);font-size:0.9rem">对应选项 1–4</span>
+          </div>
+        </div>
+      </div>
+
+      <button class="start-btn" id="start-btn" type="button">开始双人竞赛</button>
+      <p class="hint">答对得分并进入下一题；答错不扣分，可继续选择。先完成且得分更高者获胜；同分比用时。</p>
+    </div>
+  </div>
+
+  <div id="countdown-screen" class="screen">
+    <div id="countdown-num">3</div>
+  </div>
+
+  <div id="game-screen" class="screen">
+    <div class="topbar">
+      <div></div>
+      <div class="score-pill">
+        <span class="r">红 <span id="top-red">0</span> / <span id="top-total">5</span></span>
+        <span class="sep">·</span>
+        <span class="b">蓝 <span id="top-blue">0</span> / <span id="top-total2">5</span></span>
+      </div>
+      <div></div>
+      <div class="subtitle">左右双题竞速，双方完全独立推进</div>
+    </div>
+
+    <div class="arena">
+      <section class="side red" id="side-red">
+        <div class="side-head">
+          <div class="team-name">红方</div>
+          <div class="stat-box">
+            <span class="progress-label"><span id="red-progress">1</span> / <span class="total-label">5</span></span>
+            <span class="score-badge" id="red-score" title="得分">0</span>
+            <span class="time-badge" id="red-time" title="用时（秒）">0</span>
+          </div>
+        </div>
+        <div class="side-body">
+          <div class="prompt">选择正确答案（Q / W / E / A）</div>
+          <div class="question-box" id="red-question"></div>
+          <div class="options" id="red-options"></div>
+          <div class="finished-overlay">
+            <strong>红方完赛！</strong>
+            <span id="red-finish-text">等待蓝方…</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="side blue" id="side-blue">
+        <div class="side-head">
+          <div class="team-name">蓝方</div>
+          <div class="stat-box">
+            <span class="progress-label"><span id="blue-progress">1</span> / <span class="total-label">5</span></span>
+            <span class="score-badge" id="blue-score" title="得分">0</span>
+            <span class="time-badge" id="blue-time" title="用时（秒）">0</span>
+          </div>
+        </div>
+        <div class="side-body">
+          <div class="prompt">选择正确答案（I / O / P / K）</div>
+          <div class="question-box" id="blue-question"></div>
+          <div class="options" id="blue-options"></div>
+          <div class="finished-overlay">
+            <strong>蓝方完赛！</strong>
+            <span id="blue-finish-text">等待红方…</span>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <div id="result-screen" class="screen">
+    <div class="result-card">
+      <h1 id="result-title">比赛结束</h1>
+      <p class="winner-line" id="winner-line"></p>
+      <div class="stats-grid">
+        <div class="stat-panel red">
+          <h3>红方战绩</h3>
+          <p><span>得分</span><strong id="res-red-score">0</strong></p>
+          <p><span>正确率</span><strong id="res-red-acc">0%</strong></p>
+          <p><span>用时</span><strong id="res-red-time">0.0s</strong></p>
+          <p><span>答错次数</span><strong id="res-red-wrong">0</strong></p>
+        </div>
+        <div class="stat-panel blue">
+          <h3>蓝方战绩</h3>
+          <p><span>得分</span><strong id="res-blue-score">0</strong></p>
+          <p><span>正确率</span><strong id="res-blue-acc">0%</strong></p>
+          <p><span>用时</span><strong id="res-blue-time">0.0s</strong></p>
+          <p><span>答错次数</span><strong id="res-blue-wrong">0</strong></p>
+        </div>
+      </div>
+      <button class="again-btn" id="again-btn" type="button">再来一局</button>
+    </div>
+  </div>
+
+  <script>
+    const BANK = [
+      {
+        q: "宋初改变唐末五代武将专权乱象，解除高级将领兵权的历史事件是（）",
+        options: ["陈桥驿兵变", "杯酒释兵权", "靖康之变", "庆历新政"],
+        answer: 1
+      },
+      {
+        q: "宋初为解决地方藩镇割据问题，把地方精兵编入中央禁军，定期轮换驻防，将领不随军队调动，这一制度是（）",
+        options: ["保甲法", "更戍法", "募兵制", "察举制"],
+        answer: 1
+      },
+      {
+        q: "北宋在中央分割宰相行政权力，增设的副宰相官职是（）",
+        options: ["枢密使", "三司使", "参知政事", "通判"],
+        answer: 2
+      },
+      {
+        q: "北宋路级四司当中，掌管地方司法、刑狱监察的是（）",
+        options: ["安抚司（帅司）", "提点刑狱司（宪司）", "提举常平司（仓司）", "转运司（漕司）"],
+        answer: 1
+      },
+      {
+        q: "北宋二府三司制中的“二府”指的是（）",
+        options: ["中书门下、枢密院", "中书门下、三司", "枢密院、御史台", "尚书省、门下省"],
+        answer: 0
+      },
+      {
+        q: "“二府三司”中，掌管全国财政，被称为“计相”的是（）",
+        options: ["中书门下", "枢密院", "三司", "御史台"],
+        answer: 2
+      },
+      {
+        q: "北宋派到各州，监督知州，可以直接向皇帝奏报的官职是（）",
+        options: ["转运使", "通判", "提点刑狱司", "节度使"],
+        answer: 1
+      },
+      {
+        q: "北宋路级机构中“漕司”转运使主要负责哪一项地方权力（）",
+        options: ["军事", "财政赋税", "司法刑狱", "赈灾仓储"],
+        answer: 1
+      },
+      {
+        q: "宋朝“皇帝与士大夫共治天下”局面形成，直接得益于哪一国策（）",
+        options: ["重农抑商", "崇文抑武", "守外虚内", "重武轻文"],
+        answer: 1
+      },
+      {
+        q: "下列对北宋“募兵制”的说法，正确的是（）",
+        options: [
+          "主要目的只为抵御辽、西夏外敌",
+          "招募灾荒流民，意在消解内部动乱隐患",
+          "士兵服役年限短，军队精干战斗力强",
+          "大幅减少国家财政开支"
+        ],
+        answer: 1
+      }
+    ];
+
+    const RED_KEYS = ["q", "w", "e", "a"];
+    const BLUE_KEYS = ["i", "o", "p", "k"];
+
+    const state = {
+      total: 5,
+      playing: false,
+      startedAt: 0,
+      timerId: null,
+      red: null,
+      blue: null
+    };
+
+    function shuffle(arr) {
+      const a = arr.slice();
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    }
+
+    function makePlayer(side) {
+      return {
+        side,
+        queue: shuffle(BANK).slice(0, state.total),
+        index: 0,
+        score: 0,
+        wrong: 0,
+        finished: false,
+        finishMs: 0,
+        locked: false
+      };
+    }
+
+    function showScreen(id) {
+      document.querySelectorAll(".screen").forEach((el) => el.classList.remove("active"));
+      document.getElementById(id).classList.add("active");
+    }
+
+    function formatSec(ms) {
+      return (ms / 1000).toFixed(1);
+    }
+
+    function renderPlayer(player) {
+      const prefix = player.side;
+      const sideEl = document.getElementById(`side-${prefix}`);
+      const qEl = document.getElementById(`${prefix}-question`);
+      const optEl = document.getElementById(`${prefix}-options`);
+      const progressEl = document.getElementById(`${prefix}-progress`);
+      const scoreEl = document.getElementById(`${prefix}-score`);
+
+      scoreEl.textContent = String(player.score);
+      document.getElementById(`top-${prefix}`).textContent = String(player.score);
+
+      if (player.finished) {
+        sideEl.classList.add("done");
+        document.getElementById(`${prefix}-finish-text`).textContent =
+          `得分 ${player.score} · 用时 ${formatSec(player.finishMs)}s`;
+        progressEl.textContent = String(state.total);
+        return;
+      }
+
+      sideEl.classList.remove("done");
+      const item = player.queue[player.index];
+      progressEl.textContent = String(player.index + 1);
+      qEl.textContent = item.q;
+
+      const keys = prefix === "red" ? ["Q", "W", "E", "A"] : ["I", "O", "P", "K"];
+      optEl.innerHTML = "";
+      item.options.forEach((text, i) => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "opt";
+        btn.innerHTML = `<span class="key">${keys[i]}</span><span>${text}</span>`;
+        btn.addEventListener("click", () => answer(prefix, i));
+        optEl.appendChild(btn);
+      });
+    }
+
+    function flash(side, ok) {
+      const el = document.getElementById(`side-${side}`);
+      el.classList.remove("flash-ok", "flash-bad");
+      void el.offsetWidth;
+      el.classList.add(ok ? "flash-ok" : "flash-bad");
+      setTimeout(() => el.classList.remove("flash-ok", "flash-bad"), 380);
+    }
+
+    function answer(side, optionIndex) {
+      if (!state.playing) return;
+      const player = state[side];
+      if (!player || player.finished || player.locked) return;
+
+      const item = player.queue[player.index];
+      const optButtons = [...document.getElementById(`${side}-options`).children];
+      const correct = optionIndex === item.answer;
+
+      player.locked = true;
+      optButtons.forEach((btn, i) => {
+        btn.disabled = true;
+        if (i === item.answer) btn.classList.add("correct");
+        if (i === optionIndex && !correct) btn.classList.add("wrong");
+      });
+
+      flash(side, correct);
+
+      if (correct) {
+        player.score += 1;
+        setTimeout(() => {
+          player.index += 1;
+          player.locked = false;
+          if (player.index >= state.total) {
+            finishPlayer(side);
+          } else {
+            renderPlayer(player);
+          }
+        }, 280);
+      } else {
+        player.wrong += 1;
+        setTimeout(() => {
+          player.locked = false;
+          renderPlayer(player);
+        }, 420);
+      }
+
+      renderPlayer(player);
+    }
+
+    function finishPlayer(side) {
+      const player = state[side];
+      player.finished = true;
+      player.finishMs = performance.now() - state.startedAt;
+      renderPlayer(player);
+
+      if (state.red.finished && state.blue.finished) {
+        endMatch();
+      }
+    }
+
+    function tickTimers() {
+      if (!state.playing) return;
+      const now = performance.now() - state.startedAt;
+      if (!state.red.finished) {
+        document.getElementById("red-time").textContent = String(Math.floor(now / 1000));
+      } else {
+        document.getElementById("red-time").textContent = String(Math.floor(state.red.finishMs / 1000));
+      }
+      if (!state.blue.finished) {
+        document.getElementById("blue-time").textContent = String(Math.floor(now / 1000));
+      } else {
+        document.getElementById("blue-time").textContent = String(Math.floor(state.blue.finishMs / 1000));
+      }
+    }
+
+    function decideWinner() {
+      const r = state.red;
+      const b = state.blue;
+      if (r.score > b.score) return "red";
+      if (b.score > r.score) return "blue";
+      if (r.finishMs < b.finishMs) return "red";
+      if (b.finishMs < r.finishMs) return "blue";
+      return "tie";
+    }
+
+    function endMatch() {
+      state.playing = false;
+      if (state.timerId) {
+        clearInterval(state.timerId);
+        state.timerId = null;
+      }
+
+      const winner = decideWinner();
+      const title = document.getElementById("result-title");
+      const line = document.getElementById("winner-line");
+
+      if (winner === "tie") {
+        title.textContent = "旗鼓相当！";
+        line.innerHTML = "双方得分与用时相同，本局平局。";
+      } else if (winner === "red") {
+        title.textContent = "红方获胜！";
+        line.innerHTML = "恭喜 <b class='red'>红方</b> 夺得本局胜利。";
+      } else {
+        title.textContent = "蓝方获胜！";
+        line.innerHTML = "恭喜 <b class='blue'>蓝方</b> 夺得本局胜利。";
+      }
+
+      const fill = (side, p) => {
+        document.getElementById(`res-${side}-score`).textContent = `${p.score} / ${state.total}`;
+        document.getElementById(`res-${side}-acc`).textContent =
+          state.total ? `${Math.round((p.score / state.total) * 100)}%` : "0%";
+        document.getElementById(`res-${side}-time`).textContent = `${formatSec(p.finishMs)}s`;
+        document.getElementById(`res-${side}-wrong`).textContent = String(p.wrong);
+      };
+      fill("red", state.red);
+      fill("blue", state.blue);
+
+      setTimeout(() => showScreen("result-screen"), 450);
+    }
+
+    function startCountdown() {
+      showScreen("countdown-screen");
+      const num = document.getElementById("countdown-num");
+      let n = 3;
+      num.textContent = String(n);
+      num.style.animation = "none";
+      void num.offsetWidth;
+      num.style.animation = "";
+
+      const step = () => {
+        n -= 1;
+        if (n > 0) {
+          num.textContent = String(n);
+          num.style.animation = "none";
+          void num.offsetWidth;
+          num.style.animation = "";
+          setTimeout(step, 700);
+        } else {
+          num.textContent = "开始";
+          num.style.animation = "none";
+          void num.offsetWidth;
+          num.style.animation = "";
+          setTimeout(beginMatch, 500);
+        }
+      };
+      setTimeout(step, 700);
+    }
+
+    function beginMatch() {
+      state.red = makePlayer("red");
+      state.blue = makePlayer("blue");
+      state.playing = true;
+      state.startedAt = performance.now();
+
+      document.querySelectorAll(".total-label").forEach((el) => {
+        el.textContent = String(state.total);
+      });
+      document.getElementById("top-total").textContent = String(state.total);
+      document.getElementById("top-total2").textContent = String(state.total);
+      document.getElementById("red-time").textContent = "0";
+      document.getElementById("blue-time").textContent = "0";
+
+      renderPlayer(state.red);
+      renderPlayer(state.blue);
+      showScreen("game-screen");
+
+      if (state.timerId) clearInterval(state.timerId);
+      state.timerId = setInterval(tickTimers, 200);
+    }
+
+    document.getElementById("mode-row").addEventListener("click", (e) => {
+      const btn = e.target.closest(".mode-btn");
+      if (!btn) return;
+      document.querySelectorAll(".mode-btn").forEach((b) => b.classList.remove("selected"));
+      btn.classList.add("selected");
+      state.total = Number(btn.dataset.count);
+    });
+
+    document.getElementById("start-btn").addEventListener("click", startCountdown);
+    document.getElementById("again-btn").addEventListener("click", () => {
+      showScreen("start-screen");
+    });
+
+    window.addEventListener("keydown", (e) => {
+      if (!state.playing) return;
+      const key = e.key.toLowerCase();
+      const redIdx = RED_KEYS.indexOf(key);
+      const blueIdx = BLUE_KEYS.indexOf(key);
+      if (redIdx >= 0) {
+        e.preventDefault();
+        answer("red", redIdx);
+      } else if (blueIdx >= 0) {
+        e.preventDefault();
+        answer("blue", blueIdx);
+      }
+    });
+  </script>
+</body>
+</html>
